@@ -2,15 +2,8 @@ import React, { useState, createContext, useContext, useEffect } from 'react';
 import { Menu, X, Search, MapPin, Star, Clock, DollarSign, Briefcase, Users, FileText, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { authService } from './services/authService';
 
-// Mock Data
-const initialWorkers = [
-  { id: 1, name: "Ravi Kumar", skill: "Welder", rate: 300, experience: 4, availability: "9am-6pm", location: "Chennai", rating: 4.6, status: "online" },
-  { id: 2, name: "Imran Khan", skill: "Polisher", rate: 250, experience: 3, availability: "10am-7pm", location: "Hyderabad", rating: 4.3, status: "online" },
-  { id: 3, name: "Suresh Babu", skill: "Electrician", rate: 350, experience: 6, availability: "8am-5pm", location: "Chennai", rating: 4.8, status: "online" },
-  { id: 4, name: "Vijay Singh", skill: "Carpenter", rate: 400, experience: 5, availability: "10am-8pm", location: "Bangalore", rating: 4.5, status: "offline" },
-  { id: 5, name: "Arjun Mehta", skill: "Painter", rate: 280, experience: 4, availability: "9am-6pm", location: "Mumbai", rating: 4.4, status: "online" },
-  { id: 6, name: "Ramesh Patil", skill: "Plumber", rate: 320, experience: 7, availability: "8am-6pm", location: "Pune", rating: 4.7, status: "online" }
-];
+// Initialize empty workers array
+const initialWorkers = [];
 
 const initialJobs = [
   { id: 101, title: "Machine polishing for stainless sheets", skillRequired: "Polisher", location: "Chennai", budget: 250, hours: 4, status: "Open", postedBy: "ABC Industries" },
@@ -331,6 +324,7 @@ const WorkerRegisterPage = ({ setCurrentPage }) => {
     password: '',
     phone: '',
     skill: 'Welder',
+    workerType: 'Fabricator',
     experience: 1,
     rate: 200,
     location: '',
@@ -345,7 +339,14 @@ const WorkerRegisterPage = ({ setCurrentPage }) => {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        type: 'worker'
+        type: 'worker',
+        experience: formData.experience,
+        rate: formData.rate,
+        skill: formData.skill,
+        workerType: formData.workerType,
+        location: formData.location,
+        availability: formData.availability,
+        phone: formData.phone
       });
       
       if (data.success) {
@@ -421,6 +422,22 @@ const WorkerRegisterPage = ({ setCurrentPage }) => {
               onChange={(e) => setFormData({...formData, skill: e.target.value})}
             >
               {skills.map(skill => <option key={skill}>{skill}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-semibold mb-2">Worker Type</label>
+            <select
+              className="w-full px-4 py-2 border rounded-lg"
+              value={formData.workerType}
+              onChange={(e) => setFormData({...formData, workerType: e.target.value})}
+            >
+              <option>Fabricator</option>
+              <option>Machine Operator</option>
+              <option>Construction Worker</option>
+              <option>Factory Worker</option>
+              <option>Industrial Worker</option>
+              <option>Skilled Technician</option>
             </select>
           </div>
 
@@ -1087,19 +1104,27 @@ const WorkerDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Skill</p>
-                <p className="font-semibold">{currentUser.skill}</p>
+                <p className="font-semibold">{currentUser.skill || formData.skill || 'Not specified'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Worker Type</p>
+                <p className="font-semibold">{currentUser.workerType || formData.workerType || 'Not specified'}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">Experience</p>
-                <p className="font-semibold">{currentUser.experience} years</p>
+                <p className="font-semibold">{currentUser.experience || formData.experience || '0'} years</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">Location</p>
-                <p className="font-semibold">{currentUser.location}</p>
+                <p className="font-semibold">{currentUser.location || formData.location || 'Not specified'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Hourly Rate</p>
+                <p className="font-semibold">₹{currentUser.hourlyRate || currentUser.rate || formData.rate || '0'}/hr</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">Availability</p>
-                <p className="font-semibold">{currentUser.availability}</p>
+                <p className="font-semibold">{currentUser.availability || formData.availability || 'Not specified'}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">Status</p>
@@ -1422,14 +1447,15 @@ const LoginPage = ({ setCurrentPage }) => {
   const { login } = useApp();
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    type: 'worker'  // default to worker login
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      const data = await authService.login(formData.email, formData.password);
+      const data = await authService.login(formData.email, formData.password, formData.type);
       
       if (data.success) {
         login(data.user);
@@ -1456,6 +1482,18 @@ const LoginPage = ({ setCurrentPage }) => {
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
           />
+        </div>
+
+        <div>
+          <label className="block font-semibold mb-2">Login as</label>
+          <select
+            className="w-full px-4 py-2 border rounded-lg"
+            value={formData.type}
+            onChange={(e) => setFormData({...formData, type: e.target.value})}
+          >
+            <option value="worker">Worker</option>
+            <option value="employer">Employer</option>
+          </select>
         </div>
 
         <div>

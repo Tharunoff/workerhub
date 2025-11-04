@@ -17,15 +17,15 @@ const handleResponse = async (response) => {
   return data;
 };
 
-const login = async (email, password) => {
+const login = async (email, password, type) => {
   try {
-    console.log('Attempting login for:', email);
+    console.log('Attempting login for:', email, 'as', type);
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password, type })
     });
     return await handleResponse(response);
   } catch (error) {
